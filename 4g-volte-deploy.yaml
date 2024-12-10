@@ -1,3 +1,4 @@
+version: '3'
 services:
   mongo:
     image: mongo:6.0
@@ -99,8 +100,8 @@ services:
     expose:
       - "8805/udp"
       - "2152/udp"
-    # ports:
-    #   - "2152:2152/udp"
+    ports:
+      - "2152:2152/udp"
     networks:
       default:
         ipv4_address: ${SGWU_IP}
@@ -186,8 +187,8 @@ services:
       - "36412/sctp"
       - "2123/udp"
       - "9091/tcp"
-    # ports:
-    #   - "36412:36412/sctp"
+    ports:
+      - "36412:36412/sctp"
     networks:
       default:
         ipv4_address: ${MME_IP}
@@ -376,6 +377,9 @@ services:
       - "5100-5120/udp"
       - "6100-6120/tcp"
       - "6100-6120/udp"
+    ports:
+      - "0.0.0.0:5060:5060"
+      - "0.0.0.0:5060:5060/udp"
     networks:
       default:
         ipv4_address: ${PCSCF_IP}
@@ -455,23 +459,15 @@ services:
       default:
         ipv4_address: ${METRICS_IP}
   grafana:
-    image: grafana/grafana:11.3.0
+    build: ./grafana
+    image: docker_grafana
     container_name: grafana
     env_file:
       - .env
     volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/:/etc/grafana/provisioning/
       - ./grafana:/mnt/grafana
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
-      #- GF_INSTALL_PLUGINS=${GRAFANA_INSTALL_PLUGINS}
-      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-      - GF_PATHS_DATA=/var/lib/grafana
-      - METRICS_IP=${METRICS_IP}
     expose:
       - "3000/tcp"
     ports:
@@ -485,7 +481,5 @@ networks:
       config:
         - subnet: ${TEST_NETWORK}
 volumes:
-  grafana_data:
-    name: grafana_data
   mongodbdata: {}
   dbdata: {}
